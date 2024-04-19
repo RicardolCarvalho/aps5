@@ -121,7 +121,9 @@ def bike_delete(id):
 #-------------------------------------------------------------------------------------
 @app.route('/emprestimos', methods=['GET'])
 def emprestimo_get_all():
-    emprestimos = mongo.db.emprestimos.find({}, {'_id': 0})
+    filtro = {"_id": id}
+    projecao = {'_id': 0}
+    emprestimos = mongo.db.emprestimos.find(filtro, projecao)
     lista_emprestimos = list(emprestimos)
     return {'emprestimos': lista_emprestimos}
 
