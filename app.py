@@ -2,7 +2,7 @@ from flask import Flask, request
 from datetime import datetime
 from flask_pymongo import PyMongo
 
-app = Flask(__name__)
+app = Flask(__name__) # mongodb+srv://admin:<password>@projeficaz.fsc9tus.mongodb.net/
 app.config["MONGO_URI"] = "mongodb+srv://admin:admin@projeficaz.fsc9tus.mongodb.net/ap5"
 mongo = PyMongo(app)
 
@@ -28,12 +28,14 @@ def user_post():
     projecao = {'_id': 0}
     data = request.json
     dados_user = mongo.db.usuarios.find(filtro, projecao)
-    if 'cpf' in dados_user:
-        return {"erro": "cpf já cadastrado"}, 400
-    if "cpf" == " ":
+    lista_user = list(dados_user)
+    for user in lista_user:
+        if data['cpf'] == user['cpf']:
+            return {"erro": "cpf já cadastrado"}, 400
+    if data['cpf'] == " " or data['cpf'] == "":
         return {"erro": "cpf é obrigatório"}, 400
     
-    result = mongo.db.usuarios_col.insert_one(data)
+    result = mongo.db.usuarios.insert_one(data)
     return {"id": str(result.inserted_id)}, 201
 
 @app.route('/usuarios/<int:id>', methods=['PUT'])
@@ -82,7 +84,7 @@ def bike_post():
     projecao = {'_id': 0}
     data = request.json
     dados_bike = mongo.db.bikes.find_one(filtro, projecao)
-    result = mongo.db.bikes_col.insert_one(data)
+    result = mongo.db.bikes.insert_one(data)
     return {"id": str(result.inserted_id)}, 201
 
 @app.route('/bikes/<int:id>', methods=['PUT'])
