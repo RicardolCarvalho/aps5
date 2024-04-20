@@ -137,28 +137,24 @@ def emprestimo_get_by_id(id):
         return {'erro': 'emprestimo não encontrado'}, 404
     return {'emprestimo': emprestimo}
 
-@app.route('/emprestimos', methods=['POST'])
-def emprestimo_post():
+@app.route('/emprestimos/usuarios/<id_usuario>/bikes/<id_bike>', methods=['POST'])
+def emprestimo_post(id_usuario, id_bike):
     data = request.json
-    bike_id = data.get('bike_id')
-    user_id = data.get('user_id')
-    if bike_id is None or user_id is None:
-        return {'erro': 'bike_id e user_id são obrigatórios'}, 400
-    bike = mongo.db.bikes.find_one({'_id': bike_id})
+    bike = mongo.db.bikes.find_one({'_id': id_bike})
     if bike is None:
         return {'erro': 'bicicleta não encontrada'}, 404
     if 'emprestimo' in bike:
         return {'erro': 'bicicleta já está alugada'}, 400
-    user = mongo.db.usuarios.find_one({'_id': user_id})
+    user = mongo.db.usuarios.find_one({'_id': id_usuario})
     if user is None:
         return {'erro': 'usuário não encontrado'}, 404
     emprestimo = {
-        'bike_id': bike_id,
-        'user_id': user_id,
+        'bike_id': id_bike,
+        'user_id': id_usuario,
         'data_aluguel': datetime.now()
     }
     mongo.db.emprestimos.insert_one(emprestimo)
-    mongo.db.bikes.update_one({'_id': bike_id}, {'$set': {'emprestimo': emprestimo}})
+    mongo.db.bikes.update_one({'_id': id_bike}, {'$set': {'emprestimo': emprestimo}})
     return {'mensagem': 'emprestimo registrado com sucesso'}, 201
 
 @app.route('/emprestimos/<int:id>', methods=['DELETE'])
