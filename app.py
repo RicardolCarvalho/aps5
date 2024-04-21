@@ -1,8 +1,9 @@
 from flask import Flask, request
 from datetime import datetime
+from bson import ObjectId
 from flask_pymongo import PyMongo
 
-app = Flask(__name__) # mongodb+srv://admin:<password>@projeficaz.fsc9tus.mongodb.net/
+app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb+srv://admin:admin@projeficaz.fsc9tus.mongodb.net/ap5"
 mongo = PyMongo(app)
 
@@ -14,11 +15,13 @@ def user_get():
     lista_user = list(dados_user)
     return {'usuarios': lista_user}
 
-@app.route('/usuarios/<int:id>', methods=['GET'])
-def user_get_id():
-    filtro = {"_id": id}
+@app.route('/usuarios/<string:id>', methods=['GET'])
+def user_get_id(id):
+    filtro = {"_id": ObjectId(id)}
     projecao = {'_id': 0}
     dados_user = mongo.db.usuarios.find_one(filtro, projecao)
+    if dados_user is None:
+        return {"erro": "usuário não encontrado"}, 404
     lista_user = list(dados_user)
     return {'usuarios': lista_user}
 
@@ -38,9 +41,9 @@ def user_post():
     result = mongo.db.usuarios.insert_one(data)
     return {"id": str(result.inserted_id)}, 201
 
-@app.route('/usuarios/<int:id>', methods=['PUT'])
+@app.route('/usuarios/<string:id>', methods=['PUT'])
 def user_put(id):
-    filtro = {"_id": id}
+    filtro = {"_id": ObjectId(id)}
     projecao = {"_id": 0}
     data = request.json
     usuario_existente = mongo.db.usuarios.find_one(filtro, projecao)
@@ -49,9 +52,9 @@ def user_put(id):
     mongo.db.usuarios.update_one(filtro, {"$set": data})
     return {"mensagem": "alteração realizada com sucesso"}, 200
 
-@app.route('/usuarios<int:id>', methods=['DELETE'])
+@app.route('/usuarios/<string:id>', methods=['DELETE'])
 def user_delete(id):
-    filtro = {"_id": id}
+    filtro ={"_id": ObjectId(id)}
     projecao = {'_id': 0}
     data = request.json
     usuario_existente = mongo.db.usuarios.find_one(filtro, projecao)
@@ -70,9 +73,9 @@ def bike_get():
     lista_bike = list(dados_bike)
     return {'bike': lista_bike}
 
-@app.route('/bikes/<int:id>', methods=['GET'])
+@app.route('/bikes/<string:id>', methods=['GET'])
 def bike_get_id():
-    filtro = {"_id": id}
+    filtro = {"_id": ObjectId(id)}
     projecao = {'_id': 0}
     dados_bike = mongo.db.bikes.find_one(filtro, projecao)
     lista_bike = list(dados_bike)
@@ -87,9 +90,9 @@ def bike_post():
     result = mongo.db.bikes.insert_one(data)
     return {"id": str(result.inserted_id)}, 201
 
-@app.route('/bikes/<int:id>', methods=['PUT'])
+@app.route('/bikes/<string:id>', methods=['PUT'])
 def bike_put():
-    filtro = {"_id": id}
+    filtro = {"_id": ObjectId(id)}
     projecao = {"_id": 0}
     data = request.json
     bike_existente = mongo.db.bikes.find_one(filtro, projecao)
@@ -98,18 +101,18 @@ def bike_put():
     mongo.db.bikes.update_one(filtro, {"$set": data})
     return {"mensagem": "alteração realizada com sucesso"}, 200
 
-@app.route('/bikes/<int:id>', methods = ['GET'])
+@app.route('/bikes/<string:id>', methods = ['GET'])
 def get_bike():
-    filtro = {"_id": id}
+    filtro = {"_id": ObjectId(id)}
     projecao = {'_id': 0}
     dados_bike = mongo.db.bikes.find_one(filtro, projecao)
     lista_bike = list(dados_bike)
     return {'bike': lista_bike}
 
 
-@app.route('/bikes<int:id>', methods=['DELETE'])
+@app.route('/bikes<string:id>', methods=['DELETE'])
 def bike_delete(id):
-    filtro = {"_id": id}
+    filtro = {"_id": ObjectId(id)}
     projecao = {'_id': 0}
     data = request.json
     bike_existente = mongo.db.bikes.find_one(filtro, projecao)
@@ -123,29 +126,32 @@ def bike_delete(id):
 #-------------------------------------------------------------------------------------
 @app.route('/emprestimos', methods=['GET'])
 def emprestimo_get_all():
-    filtro = {"_id": id}
+    filtro = {"_id": ObjectId(id)}
     projecao = {'_id': 0}
     emprestimos = mongo.db.emprestimos.find(filtro, projecao)
     lista_emprestimos = list(emprestimos)
     return {'emprestimos': lista_emprestimos}
 
-@app.route('/emprestimos/<int:id>', methods=['GET'])
+@app.route('/emprestimos/<string:id>', methods=['GET'])
 def emprestimo_get_by_id(id):
-    filtro = {'_id': id}
-    emprestimo = mongo.db.emprestimos.find_one(filtro, {'_id': 0})
+    filtro = {"_id": ObjectId(id)}
+    projecao = {'_id': 0}
+    emprestimo = mongo.db.emprestimos.find_one(filtro, projecao)
     if emprestimo is None:
         return {'erro': 'emprestimo não encontrado'}, 404
     return {'emprestimo': emprestimo}
 
-@app.route('/emprestimos/usuarios/<id_usuario>/bikes/<id_bike>', methods=['POST'])
+@app.route('/emprestimos/usuarios/<string:id_usuario>/bikes/<string:id_bike>', methods=['POST'])
 def emprestimo_post(id_usuario, id_bike):
+    filtro_bike = filtro = {"_id": ObjectId(id_bike)}
+    bike = mongo.db.bikes.find_one(filtro_bike)
     data = request.json
-    bike = mongo.db.bikes.find_one({'_id': id_bike})
     if bike is None:
         return {'erro': 'bicicleta não encontrada'}, 404
     if 'emprestimo' in bike:
         return {'erro': 'bicicleta já está alugada'}, 400
-    user = mongo.db.usuarios.find_one({'_id': id_usuario})
+    filtro_usuario = {"_id": ObjectId(id_usuario)}
+    user = mongo.db.usuarios.find_one(filtro_usuario)
     if user is None:
         return {'erro': 'usuário não encontrado'}, 404
     emprestimo = {
@@ -154,17 +160,17 @@ def emprestimo_post(id_usuario, id_bike):
         'data_aluguel': datetime.now()
     }
     mongo.db.emprestimos.insert_one(emprestimo)
-    mongo.db.bikes.update_one({'_id': id_bike}, {'$set': {'emprestimo': emprestimo}})
+    mongo.db.bikes.update_one({"_id": ObjectId(id_usuario)}, {'$set': {'emprestimo': emprestimo}})
     return {'mensagem': 'emprestimo registrado com sucesso'}, 201
 
-@app.route('/emprestimos/<int:id>', methods=['DELETE'])
+@app.route('/emprestimos/<string:id>', methods=['DELETE'])
 def emprestimo_delete(id):
-    filtro = {'_id': id}
+    filtro = {"_id": ObjectId(id)}
     emprestimo = mongo.db.emprestimos.find_one(filtro)
     if emprestimo is None:
         return {'erro': 'emprestimo não encontrado'}, 404
     bike_id = emprestimo['bike_id']
-    mongo.db.bikes.update_one({'_id': bike_id}, {'$unset': {'emprestimo': ''}})
+    mongo.db.bikes.update_one({"_id": ObjectId(bike_id)}, {'$unset': {'emprestimo': ''}})
     mongo.db.emprestimos.delete_one(filtro)
     return {'mensagem': 'emprestimo deletado com sucesso'}
 
