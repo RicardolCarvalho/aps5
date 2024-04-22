@@ -1,5 +1,4 @@
 from flask import Flask, request
-from datetime import datetime
 from bson import ObjectId
 from flask_pymongo import PyMongo
 
@@ -72,7 +71,7 @@ def bike_get():
     return {'bike': lista_bike}, 200
 
 @app.route('/bikes/<string:id>', methods=['GET'])
-def bike_get_id():
+def bike_get_id(id):
     filtro = {"_id": ObjectId(id)}
     projecao = {'_id': 0}
     dados_bike = mongo.db.bikes.find_one(filtro, projecao)
@@ -88,7 +87,7 @@ def bike_post():
     return {"id": str(result.inserted_id)}, 201
 
 @app.route('/bikes/<string:id>', methods=['PUT'])
-def bike_put():
+def bike_put(id):
     filtro = {"_id": ObjectId(id)}
     projecao = {"_id": 0}
     data = request.json
@@ -144,10 +143,10 @@ def emprestimo_post(id_usuario, id_bike):
     emprestimo = {
         'bike_id': id_bike,
         'user_id': id_usuario,
-        'data_aluguel': datetime.now()
+        'data_aluguel': data['data_aluguel'],
     }
     mongo.db.emprestimos.insert_one(emprestimo)
-    mongo.db.bikes.update_one({"_id": ObjectId(id_usuario)}, {'$set': {'emprestimo': emprestimo}})
+    mongo.db.bikes.update_one({"_id": ObjectId(id_bike)}, {'$set': {'emprestimo': emprestimo}})
     return {'mensagem': 'emprestimo registrado com sucesso'}, 201
 
 @app.route('/emprestimos/<string:id>', methods=['DELETE'])
