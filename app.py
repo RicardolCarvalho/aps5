@@ -102,7 +102,6 @@ def bike_put():
 def bike_delete(id):
     filtro = {"_id": ObjectId(id)}
     projecao = {'_id': 0}
-    data = request.json
     bike_existente = mongo.db.bikes.find_one(filtro, projecao)
     if bike_existente is None:
         return {"erro": "bike não encontrada"}, 404
