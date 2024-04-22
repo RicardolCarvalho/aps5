@@ -22,8 +22,7 @@ def user_get_id(id):
     dados_user = mongo.db.usuarios.find_one(filtro, projecao)
     if dados_user is None:
         return {"erro": "usuário não encontrado"}, 404
-    lista_user = list(dados_user)
-    return {'usuarios': lista_user}
+    return {'usuarios': dados_user}
 
 @app.route('/usuarios', methods=['POST'])
 def user_post():
@@ -78,8 +77,7 @@ def bike_get_id():
     filtro = {"_id": ObjectId(id)}
     projecao = {'_id': 0}
     dados_bike = mongo.db.bikes.find_one(filtro, projecao)
-    lista_bike = list(dados_bike)
-    return {'bike': lista_bike}
+    return {'bike': dados_bike}
 
 @app.route('/bikes', methods=['POST'])
 def bike_post():
@@ -100,15 +98,6 @@ def bike_put():
         return {"erro": "bike não encontrada"}, 404
     mongo.db.bikes.update_one(filtro, {"$set": data})
     return {"mensagem": "alteração realizada com sucesso"}, 200
-
-@app.route('/bikes/<string:id>', methods = ['GET'])
-def get_bike():
-    filtro = {"_id": ObjectId(id)}
-    projecao = {'_id': 0}
-    dados_bike = mongo.db.bikes.find_one(filtro, projecao)
-    lista_bike = list(dados_bike)
-    return {'bike': lista_bike}
-
 
 @app.route('/bikes<string:id>', methods=['DELETE'])
 def bike_delete(id):
