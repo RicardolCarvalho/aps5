@@ -97,7 +97,7 @@ def bike_put(id):
     mongo.db.bikes.update_one(filtro, {"$set": data})
     return {"mensagem": "alteração realizada com sucesso"}, 200
 
-@app.route('/bikes<string:id>', methods=['DELETE'])
+@app.route('/bikes/<string:id>', methods=['DELETE'])
 def bike_delete(id):
     filtro = {"_id": ObjectId(id)}
     projecao = {'_id': 0}
@@ -112,7 +112,7 @@ def bike_delete(id):
 #-------------------------------------------------------------------------------------
 @app.route('/emprestimos', methods=['GET'])
 def emprestimo_get_all():
-    filtro = {"_id": ObjectId(id)}
+    filtro = {}
     projecao = {'_id': 0}
     emprestimos = mongo.db.emprestimos.find(filtro, projecao)
     lista_emprestimos = list(emprestimos)
