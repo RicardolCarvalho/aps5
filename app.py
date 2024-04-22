@@ -132,7 +132,7 @@ def emprestimo_get_by_id(id):
 
 @app.route('/emprestimos/usuarios/<string:id_usuario>/bikes/<string:id_bike>', methods=['POST'])
 def emprestimo_post(id_usuario, id_bike):
-    filtro_bike = filtro = {"_id": ObjectId(id_bike)}
+    filtro_bike = {"_id": ObjectId(id_bike)}
     bike = mongo.db.bikes.find_one(filtro_bike)
     data = request.json
     if bike is None:
