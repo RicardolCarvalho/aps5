@@ -55,7 +55,6 @@ def user_put(id):
 def user_delete(id):
     filtro ={"_id": ObjectId(id)}
     projecao = {'_id': 0}
-    data = request.json
     usuario_existente = mongo.db.usuarios.find_one(filtro, projecao)
     if usuario_existente is None:
         return {"erro": "usuário não encontrado"}, 404
