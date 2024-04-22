@@ -13,7 +13,7 @@ def user_get():
     projecao = {'_id': 0}
     dados_user = mongo.db.usuarios.find(filtro, projecao)
     lista_user = list(dados_user)
-    return {'usuarios': lista_user}
+    return {'usuarios': lista_user}, 200
 
 @app.route('/usuarios/<string:id>', methods=['GET'])
 def user_get_id(id):
@@ -22,7 +22,7 @@ def user_get_id(id):
     dados_user = mongo.db.usuarios.find_one(filtro, projecao)
     if dados_user is None:
         return {"erro": "usuário não encontrado"}, 404
-    return {'usuarios': dados_user}
+    return {'usuarios': dados_user}, 200
 
 @app.route('/usuarios', methods=['POST'])
 def user_post():
@@ -61,7 +61,7 @@ def user_delete(id):
     else:
         delete = mongo.db.usuarios.delete_one(filtro)
     
-    return {"mensagem": "usuário deletado com sucesso"}
+    return {"mensagem": "usuário deletado com sucesso"}, 200
 
 @app.route('/bikes', methods=['GET'])
 def bike_get():
@@ -69,14 +69,14 @@ def bike_get():
     projecao = {'_id': 0}
     dados_bike = mongo.db.bikes.find(filtro, projecao)
     lista_bike = list(dados_bike)
-    return {'bike': lista_bike}
+    return {'bike': lista_bike}, 200
 
 @app.route('/bikes/<string:id>', methods=['GET'])
 def bike_get_id():
     filtro = {"_id": ObjectId(id)}
     projecao = {'_id': 0}
     dados_bike = mongo.db.bikes.find_one(filtro, projecao)
-    return {'bike': dados_bike}
+    return {'bike': dados_bike}, 200
 
 @app.route('/bikes', methods=['POST'])
 def bike_post():
@@ -108,7 +108,7 @@ def bike_delete(id):
     else:
         delete = mongo.db.bikes.delete_one(filtro)
     
-    return {"mensagem": "bike deletada com sucesso"}
+    return {"mensagem": "bike deletada com sucesso"}, 200
 
 #-------------------------------------------------------------------------------------
 @app.route('/emprestimos', methods=['GET'])
@@ -117,7 +117,7 @@ def emprestimo_get_all():
     projecao = {'_id': 0}
     emprestimos = mongo.db.emprestimos.find(filtro, projecao)
     lista_emprestimos = list(emprestimos)
-    return {'emprestimos': lista_emprestimos}
+    return {'emprestimos': lista_emprestimos}, 200
 
 @app.route('/emprestimos/<string:id>', methods=['GET'])
 def emprestimo_get_by_id(id):
@@ -159,8 +159,7 @@ def emprestimo_delete(id):
     bike_id = emprestimo['bike_id']
     mongo.db.bikes.update_one({"_id": ObjectId(bike_id)}, {'$unset': {'emprestimo': ''}})
     mongo.db.emprestimos.delete_one(filtro)
-    return {'mensagem': 'emprestimo deletado com sucesso'}
-
+    return {'mensagem': 'emprestimo deletado com sucesso'}, 200
 
 if __name__ == '__main__':
     app.run(debug=True)
